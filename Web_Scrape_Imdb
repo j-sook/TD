@@ -1,0 +1,61 @@
+ # web scrape
+
+# rm(list = ls())
+# library('rvest')
+# install.packages("ggplot2")
+# library('ggplot2')
+# library('data.table')
+
+# webpage
+url <- 'https://www.imdb.com/search/title/?count=100&release_date=2016,2016&title_type=feature'
+webpage <- read_html(url)
+
+# rank
+rank_data_html <- html_nodes(webpage, '.text-primary')
+rank_data <- html_text(rank_data_html)
+rank_data <- as.numeric(rank_data)
+
+# titles
+title_data_html <- html_nodes(webpage, '.lister-item-header a')
+title_data <- html_text(title_data_html)
+
+# runtimes
+runtime_html <- html_nodes(webpage, '.runtime')
+runtime_data <- html_text(runtime_html)
+runtime_data <- gsub(" min", "", runtime_data)
+runtime_data <- as.numeric(runtime_data)
+
+
+# star score
+star_html <- html_nodes(webpage, '.ratings-imdb-rating')
+star_data <- html_text(star_html)
+star_data <- gsub(" ", "", star_data)
+star_data <- gsub("\n", "",star_data)
+star_data <- as.numeric(star_data)
+
+# data table
+movies_dt <- data.table(Title = title_data, Rank = rank_data, Runtime = runtime_data, Rating = star_data)
+
+# qplot(data = movies_dt,fill = Runtime,Runtime, bins = 15)
+# ggplot(movies_dt, aes(x = Runtime, y = Rank)) + geom_point(aes(size = Runtime, col = Rank))
+
+# histogram of runtimes
+qplot(movies_dt$Runtime, 
+      geom = "histogram",
+      xlab = "Runtime", 
+      ylab = "Runtime", 
+      main = "Count of Runtimes",
+      bins = 27,
+      fill = I("blue"),
+      col = I("red"),
+      xlim = c(80,175),
+      ylim = c(0,15))
+
+ggplot(movies_dt, aes(x = Rating, color = Rating)) + 
+   geom_histogram(binwidth = .09,
+                  color = "black",
+                  fill = "pink",
+                  alpha = .5)
+
+
+
